@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="plugin.video.16bars"
+       name="16bars"
+       version="0.0.1"
+       provider-name="r0tt">
+  <requires>
+    <import addon="xbmc.python" version="2.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+            library="default.py">
+        <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary lang="en">Watch HipHop/RapVideos</summary>
+    <language>en</language>
+    <description lang="en">Watch HipHop/RapVideos from 16bars.de</description>
+     <platform>all</platform>
+  </extension>
+</addon>
