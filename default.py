@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#16bars - by r0tt 2012. V0.0.1
+#16bars - by r0tt 2013. V0.0.2
 
 import urllib,urllib2,re,string,xbmcaddon,xbmcplugin,xbmcgui,socket,sys,os
 
@@ -18,10 +18,9 @@ except:
     import storageserverdummy as StorageServer
  
 cache = StorageServer.StorageServer("ArtworkDownloader",24)
-
 addon = xbmcaddon.Addon('plugin.video.16bars')
 scriptpath = addon.getAddonInfo('path')
-ACTION_SELECT_ITEM = 7
+ua='Mozilla/5.0 (X11; Linux x86_64; rv:17.0) Gecko/17.0 Firefox/17.0'
 base='http://www.16bars.de/media/'
 logo='/16bars_logo.gif'
 
@@ -32,46 +31,69 @@ def CATEGORIES():
         xbmcplugin.endOfDirectory(pluginhandle)
         
 def INDEX(url):
-        req = urllib2.Request(url)
-        req.add_header('User-Agent', 'Mozilla/5.0 (X11; Linux x86_64; rv:17.0) Gecko/17.0 Firefox/17.0')
-        response = urllib2.urlopen(req)
-        link = response.read()
-        response.close()
-        url=re.sub("page=(.+?)", "page=", url)
-        page=re.compile(' &nbsp;<b>(.+?)<\/b>&nbsp; ').findall(link)
-        page=str(list(set(page)))
-        page=int(str(page).strip("'[]'")) + 1
-        pageurl=url + str(page)
-        addDir("Go To Page "+str(page), pageurl, 1, "")
-        title=re.compile('    (.+?)<span style="font-weight: normal;">(.+?)</span> </a></h4>').findall(link)
-        video1=re.compile('    <a href=\"(\/media\/.+?)\"><img src=\"').findall(link)
-        video=['http://www.16bars.de'+li for li in video1]
-        thumb=re.compile('\"><img src=\"(.+?)\" alt=').findall(link)
-        match=zip(title, video, thumb)
-        for name,url,thumb in match:
-            name = str(name).replace('"','').replace(',','').replace('(','').replace(')','').replace("'","").replace('\\xc3\\xb6','ö').replace('\\xc3\\xbc','ü').replace('\\xc3\\xa4','ä').replace('\\xfc','ü').replace('\\xf6','ö')
-            addDir(name,url,2,thumb)
-        xbmcplugin.endOfDirectory(pluginhandle)      
+		req = urllib2.Request(url)
+		req.add_header('User-Agent', ua)
+		response = urllib2.urlopen(req)
+		link = response.read()
+		response.close()
+		url=re.sub("page=(\d{0,9999})", "page=", url)
+		page=re.compile(' &nbsp;<b>(.+?)<\/b>&nbsp; ').findall(link)
+		page=str(list(set(page)))
+		page1=int(str(page).strip("'[]'")) + 1
+		page10=int(str(page).strip("'[]'")) + 10
+		page100=int(str(page).strip("'[]'")) + 100
+		pageurl=url + str(page1)
+		pageurl10=url + str(page10)
+		pageurl100=url + str(page100)
+		pageend=re.compile('</b>&nbsp; <a href=\"/media/video\w*?(.+?)=').findall(link)
+		pageend=str(re.compile('\[\'(.+?)\', \'').findall(str(pageend))).strip("'[]'")
+		if pageend == 'page' or '-deutsch?page' or 'video-classic?page':
+			addDir("Next Page "+str(page1), pageurl, 1, "")
+		title=re.compile('    (.+?)<span style="font-weight: normal;">(.+?)</span> </a></h4>').findall(link)
+		video1=re.compile('    <a href=\"(\/media\/.+?)\"><img src=\"').findall(link)
+		video=['http://www.16bars.de'+li for li in video1]
+		thumb=re.compile('\"><img src=\"(.+?)\" alt=').findall(link)
+		match=zip(title, video, thumb)
+		for name,url,thumb in match:
+			name = str(name).replace('"','').replace('&#xfc;','ö').replace('&#xfc;','ü').replace(',','').replace('(','').replace(')','').replace("'","").replace('\\xc3\\xb6','ö').replace('\\xc3\\xbc','ü').replace('\\xc3\\xa4','ä').replace('\\xfc','ü').replace('\\xf6','ö')
+			addDir(name,url,2,thumb)
+		if pageend == 'page' or '-deutsch?page' or 'video-classic?page':
+			addDir("Next 10 Pages "+str(page10), pageurl10, 1, "")
+			addDir("Next 100 Pages "+str(page100), pageurl100, 1, "")
+		xbmcplugin.endOfDirectory(pluginhandle)      
 
 def VIDEOLINKS(url,name):
-        req = urllib2.Request(url)
-        req.add_header('User-Agent', 'Mozilla/5.0 (X11; Linux x86_64; rv:17.0) Gecko/17.0 Firefox/17.0')
-        response = urllib2.urlopen(req)
-        link=response.read()
-        response.close()
-        match=re.compile('/embed/(.+?)\"').findall(link)
-        for url in match:
-            Vid = str(match).strip("['']")
-            url = 'plugin://plugin.video.youtube/?path=/root/video&action=play_video&videoid=%s' % Vid
-            addLink(name,url,'')
-        xbmcplugin.endOfDirectory(pluginhandle)
-
-def playVid(Vid):
-        action=''
-        if action == ACTION_SELECT_ITEM:
-            url = 'plugin://plugin.video.youtube/?path=/root/video&action=play_video&videoid=%s' % Vid
-            xbmc.executebuiltin("xbmc.PlayMedia("+url+")")
-        xbmcplugin.endOfDirectory(pluginhandle)
+		req = urllib2.Request(url)
+		req.add_header('User-Agent', ua)
+		response = urllib2.urlopen(req)
+		link=response.read()
+		response.close()
+		match1=str(re.compile('value="http://(.+?)/video').findall(link)).strip("['']")
+		match2=str(re.compile('src=\"//(.+?)/embed/').findall(link)).strip("['']")
+		match3=str(re.compile('src=\"//(.+?)/video/').findall(link)).strip("['']")
+		match4=str(re.compile('src=\"http\:\/\/(.+?)\/embed\/video\/').findall(link)).strip("['']")
+		if match1 == 'www.worldstarhiphop.com':
+			match=str(re.compile('value=\"(.+?)\"></param><param name=\"allowFullScreen').findall(link)).strip("['']")
+			r=urllib2.urlopen(match)
+			r2=r.geturl()
+			url=str(re.compile('&file=(.+?)&').findall(r2)).strip("['']")
+			addLink(name,url,'')
+			xbmc.executebuiltin("xbmc.PlayMedia("+url+")")
+		if match2 == 'www.youtube.com':
+			match=str(re.compile('/embed/(.+?)\"').findall(link)).strip("['']")
+			url='plugin://plugin.video.youtube/?path=/root/video&action=play_video&videoid=%s' % match
+			addLink(name,url,'')
+			xbmc.executebuiltin("xbmc.PlayMedia("+url+")")
+		if match3 == 'player.vimeo.com':
+			match=str(re.compile('iframe src=\"//player.vimeo.com/video/(.+?)\"').findall(link)).strip("['']")
+			url='plugin://plugin.video.vimeo/?action=play_video&videoid=%s' % match
+			addLink(name,url,'')
+			xbmc.executebuiltin("xbmc.PlayMedia("+url+")")
+		if match4 == 'www.dailymotion.com':
+			match=str(re.compile('/embed/video/(.+?)\"></iframe>').findall(link)).strip("['']")
+			addLink(name,url,'')
+			url=xbmc.Player().play('plugin://plugin.video.dailymotion_com/?mode=playVideo&url=%s' % match)
+		xbmcplugin.endOfDirectory(pluginhandle)
     
 def get_params():
         param=[]
