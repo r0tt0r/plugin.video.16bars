@@ -12,8 +12,13 @@
   </extension>
   <extension point="xbmc.addon.metadata">
     <summary lang="en">Watch HipHop/RapVideos</summary>
-    <language>en</language>
-    <description lang="en">Watch HipHop/RapVideos from 16bars.de</description>
-     <platform>all</platform>
+    <language>de, en</language>
+    <description lang="en">Watch HipHop/RapVideos from 16bars.de; required addons: youtube, dailymotion, vimeo, myvideo</description>
+    <license>GNU GENERAL PUBLIC LICENSE. Version 2, June 1991</license>
+    <platform>all</platform>
+    <forum></forum>
+    <website>https://github.com/r0tt0r/plugin.video.16bars</website>
+    <email></email>
+    <source>https://github.com/r0tt0r/plugin.video.16bars</source>
   </extension>
 </addon>

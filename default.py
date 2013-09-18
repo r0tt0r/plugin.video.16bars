@@ -55,7 +55,7 @@ def INDEX(url):
 		thumb=re.compile('\"><img src=\"(.+?)\" alt=').findall(link)
 		match=zip(title, video, thumb)
 		for name,url,thumb in match:
-			name = str(name).replace('"','').replace('&#xfc;','ö').replace('&#xfc;','ü').replace(',','').replace('(','').replace(')','').replace("'","").replace('\\xc3\\xb6','ö').replace('\\xc3\\xbc','ü').replace('\\xc3\\xa4','ä').replace('\\xfc','ü').replace('\\xf6','ö')
+			name = str(name).replace('"','').replace('&#xfc;','ö').replace('&#xfc;','ü').replace(',','').replace('(','').replace(')','').replace("'","").replace('\\xc3\\xb6','ö').replace('\\xc3\\xbc','ü').replace('\\xc3\\xa4','ä').replace('\\xfc','ü').replace('\\xf6','ö').replace('\\xc3\\xa1','à')
 			addDir(name,url,2,thumb)
 		if pageend == 'page' or '-deutsch?page' or 'video-classic?page':
 			addDir("Next 10 Pages "+str(page10), pageurl10, 1, "")
@@ -69,9 +69,12 @@ def VIDEOLINKS(url,name):
 		link=response.read()
 		response.close()
 		match1=str(re.compile('value="http://(.+?)/video').findall(link)).strip("['']")
-		match2=str(re.compile('src=\"//(.+?)/embed/').findall(link)).strip("['']")
+		match2=str(re.compile('//(.+?)/embed/').findall(link)).strip("['']")
 		match3=str(re.compile('src=\"//(.+?)/video/').findall(link)).strip("['']")
 		match4=str(re.compile('src=\"http\:\/\/(.+?)\/embed\/video\/').findall(link)).strip("['']")
+		match5=str(re.compile('src=\'http://(.+?)/embed/').findall(link)).strip("['']")
+		match6=str(re.compile('flv=http%3a//(.+?)/fmp/').findall(link)).strip("['']")
+		match7=str(re.compile('\" src=\"http:\/\/(.+?)\/embed_iframe\/').findall(link)).strip("['']")
 		if match1 == 'www.worldstarhiphop.com':
 			match=str(re.compile('value=\"(.+?)\"></param><param name=\"allowFullScreen').findall(link)).strip("['']")
 			r=urllib2.urlopen(match)
@@ -91,8 +94,29 @@ def VIDEOLINKS(url,name):
 			xbmc.executebuiltin("xbmc.PlayMedia("+url+")")
 		if match4 == 'www.dailymotion.com':
 			match=str(re.compile('/embed/video/(.+?)\"></iframe>').findall(link)).strip("['']")
+			url='plugin://plugin.video.dailymotion_com/?mode=playVideo&url=%s' % match
+			xbmc.Player().play(url)
 			addLink(name,url,'')
-			url=xbmc.Player().play('plugin://plugin.video.dailymotion_com/?mode=playVideo&url=%s' % match)
+		if match5 == 'www.myvideo.de':
+			match=str(re.compile('/embed/(.+?)\'').findall(link)).strip("['']")
+			url='plugin://plugin.video.myvideo_de/video/%s/play' % match
+			addLink(name,url,'')
+			xbmc.executebuiltin("xbmc.PlayMedia("+url+")")
+		if match6 == 'blazinstreetz.com':
+			url=str(re.compile('value="flv=(.+?)\"').findall(link)).strip("['']").replace('%20',' ').replace('%3a',':')
+			addLink(name,url,'')
+			xbmc.executebuiltin("xbmc.PlayMedia("+url+")")
+		if match7 == 'cms.springboardplatform.com':
+			match=str(re.compile('\" src=\"http:\/\/cms.springboardplatform.com\/embed_iframe\/(.+?)\"').findall(link)).strip("['']")
+			url='http://cms.springboardplatform.com/embed_iframe/' + match
+			req = urllib2.Request(url)
+			req.add_header('User-Agent', ua)
+			response = urllib2.urlopen(req)
+			link=response.read()
+			response.close()
+			url=str(re.compile('<meta property=\"og:video\" content=\"(.+?)\" />').findall(link)).strip("['']")
+			addLink(name,url,'')
+			xbmc.executebuiltin("xbmc.PlayMedia("+url+")")
 		xbmcplugin.endOfDirectory(pluginhandle)
     
 def get_params():
