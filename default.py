@@ -55,7 +55,7 @@ def INDEX(url):
 		thumb=re.compile('\"><img src=\"(.+?)\" alt=').findall(link)
 		match=zip(title, video, thumb)
 		for name,url,thumb in match:
-			name = str(name).replace('"','').replace('&#xfc;','ö').replace('&#xfc;','ü').replace(',','').replace('(','').replace(')','').replace("'","").replace('\\xc3\\xb6','ö').replace('\\xc3\\xbc','ü').replace('\\xc3\\xa4','ä').replace('\\xfc','ü').replace('\\xf6','ö').replace('\\xc3\\xa1','à')
+			name = str(name).replace('"','').replace('&#xfc;','ö').replace('&#xfc;','ü').replace(',','').replace('(','').replace(')','').replace("'","").replace('\\xc3\\xb6','ö').replace('\\xc3\\xbc','ü').replace('\\xc3\\xa4','ä').replace('\\xfc','ü').replace('\\xf6','ö').replace('\\xc3\\xa1','à').replace('\\xe4','ä').replace('&amp;','&')
 			addDir(name,url,2,thumb)
 		if pageend == 'page' or '-deutsch?page' or 'video-classic?page':
 			addDir("Next 10 Pages "+str(page10), pageurl10, 1, "")
@@ -70,9 +70,12 @@ def VIDEOLINKS(url,name):
 		response.close()
 		match1=str(re.compile('value="http://(.+?)/video').findall(link)).strip("['']")
 		match2=str(re.compile('//(.+?)/embed/').findall(link)).strip("['']")
+		match21=str(re.compile('value=\"http://(.+?)/v/').findall(link)).strip("['']")
 		match3=str(re.compile('src=\"//(.+?)/video/').findall(link)).strip("['']")
 		match4=str(re.compile('src=\"http\:\/\/(.+?)\/embed\/video\/').findall(link)).strip("['']")
+		match41=str(re.compile('value="http://(.+?)/swf/').findall(link)).strip("['']")
 		match5=str(re.compile('src=\'http://(.+?)/embed/').findall(link)).strip("['']")
+		match51=str(re.compile('data="http://(.+?)/movie/').findall(link)).strip("['']")
 		match6=str(re.compile('flv=http%3a//(.+?)/fmp/').findall(link)).strip("['']")
 		match7=str(re.compile('\" src=\"http:\/\/(.+?)\/embed_iframe\/').findall(link)).strip("['']")
 		if match1 == 'www.worldstarhiphop.com':
@@ -82,26 +85,44 @@ def VIDEOLINKS(url,name):
 			url=str(re.compile('&file=(.+?)&').findall(r2)).strip("['']")
 			addLink(name,url,'')
 			xbmc.executebuiltin("xbmc.PlayMedia("+url+")")
-		if match2 == 'www.youtube.com':
+		if match2 or match21 == 'www.youtube.com':
 			match=str(re.compile('/embed/(.+?)\"').findall(link)).strip("['']")
-			url='plugin://plugin.video.youtube/?path=/root/video&action=play_video&videoid=%s' % match
-			addLink(name,url,'')
-			xbmc.executebuiltin("xbmc.PlayMedia("+url+")")
+			if match == '':
+				match=str(re.compile('value=\"http://www.youtube.com/v/(.+?)&amp;').findall(link)).strip("['']")
+				url='plugin://plugin.video.youtube/?path=/root/video&action=play_video&videoid=%s' % match
+				addLink(name,url,'')
+				xbmc.executebuiltin("xbmc.PlayMedia("+url+")")
+			else:	
+				url='plugin://plugin.video.youtube/?path=/root/video&action=play_video&videoid=%s' % match
+				addLink(name,url,'')
+				xbmc.executebuiltin("xbmc.PlayMedia("+url+")")
 		if match3 == 'player.vimeo.com':
 			match=str(re.compile('iframe src=\"//player.vimeo.com/video/(.+?)\"').findall(link)).strip("['']")
 			url='plugin://plugin.video.vimeo/?action=play_video&videoid=%s' % match
 			addLink(name,url,'')
 			xbmc.executebuiltin("xbmc.PlayMedia("+url+")")
-		if match4 == 'www.dailymotion.com':
+		if match4 or match41 == 'www.dailymotion.com':
 			match=str(re.compile('/embed/video/(.+?)\"></iframe>').findall(link)).strip("['']")
-			url='plugin://plugin.video.dailymotion_com/?mode=playVideo&url=%s' % match
-			xbmc.Player().play(url)
-			addLink(name,url,'')
-		if match5 == 'www.myvideo.de':
+			if match == '':
+				match=str(re.compile('value=\"http://www.dailymotion.com/swf/(.+?)\">').findall(link)).strip("['']")
+				url='plugin://plugin.video.dailymotion_com/?mode=playVideo&url=%s' % match
+				xbmc.Player().play(url)
+				addLink(name,url,'')
+			else:
+				url='plugin://plugin.video.dailymotion_com/?mode=playVideo&url=%s' % match
+				xbmc.Player().play(url)
+				addLink(name,url,'')
+		if match5 or match51 == 'www.myvideo.de':
 			match=str(re.compile('/embed/(.+?)\'').findall(link)).strip("['']")
-			url='plugin://plugin.video.myvideo_de/video/%s/play' % match
-			addLink(name,url,'')
-			xbmc.executebuiltin("xbmc.PlayMedia("+url+")")
+			if match == '':
+				match=str(re.compile('/movie/(.+?)\" type=').findall(link)).strip("['']")
+				url='plugin://plugin.video.myvideo_de/video/%s/play' % match
+				addLink(name,url,'')
+				xbmc.executebuiltin("xbmc.PlayMedia("+url+")")
+			else:
+				url='plugin://plugin.video.myvideo_de/video/%s/play' % match
+				addLink(name,url,'')
+				xbmc.executebuiltin("xbmc.PlayMedia("+url+")")
 		if match6 == 'blazinstreetz.com':
 			url=str(re.compile('value="flv=(.+?)\"').findall(link)).strip("['']").replace('%20',' ').replace('%3a',':')
 			addLink(name,url,'')
